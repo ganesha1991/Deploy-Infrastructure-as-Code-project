@@ -6,19 +6,19 @@ deploy.sh : This script is used to deploy, delete and preview this project - It 
 Execution mode, stack name, template file, parameters file, Region (optional)
 
 
-architecture-diagram.jpg: architecture diagram of this project.
+`architecture-diagram.jpg`: architecture diagram of this project.
 
-index.html: This is main html file of application.
+`index.html`: This is main html file of application.
 
-network-params.json: Parameters file for network cloud formation stack.
+`network-params.json`: Parameters file for network cloud formation stack.
 
-network.yml: CloudFormation template for creating networking resources for this project.
+`network.yml`: CloudFormation template for creating networking resources for this project.
 
-servers-params.json: Parameters file for servers cloud formation stack.
+`servers-params.json`: Parameters file for servers cloud formation stack.
 
-servers.yml: CloudFormation template for creating servers for this project.
+`servers.yml`: CloudFormation template for creating servers for this project.
 
-gk-udagram-demo-s3-bucket - is the S3 bucket - Link : http://gk-udagram-demo-s3-bucket.s3-website-us-east-1.amazonaws.com.
+`gk-udagram-demo-s3-bucket` - is the S3 bucket
 
 
 ## Spin up instructions
