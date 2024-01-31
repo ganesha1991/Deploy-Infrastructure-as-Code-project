@@ -18,7 +18,6 @@ Execution mode, stack name, template file, parameters file, Region (optional)
 
 `servers.yml`: CloudFormation template for creating servers for this project.
 
-`gk-udagram-demo-s3-bucket` - is the S3 bucket
 
 
 ## Spin up instructions
@@ -27,6 +26,8 @@ use Deploy.sh bash script using deploy option to spin up the network stack first
 use deploy option - ./deploy.sh deploy <stack-name> <template-file> <parameter-file> <region>
 
 (the stack is already up and running )
+
+`gk-udagram-demo-s3-bucket` - is the S3 bucket created and hosted the html file there. 
 ## Outputs
 Outputs of the Network stack are the VPC ID, public subnets, private subnets and the routing tables
 Outputs for the server stack is the Loadbalancer DNS name with HTTP prefixed.
