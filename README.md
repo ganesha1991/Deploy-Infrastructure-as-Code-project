@@ -23,6 +23,7 @@ use deploy option - ./deploy.sh deploy <stack-name> <template-file> <parameter-f
 ## Outputs
 Outputs of the Network stack are the VPC ID, public subnets, private subnets and the routing tables
 Outputs for the server stack is the Loadbalancer DNS name with HTTP prefixed.
+
 Final output: http://gk-dem-webap-s4tlqovy08rd-2111062416.us-east-1.elb.amazonaws.com
 
 ## Tear down instructions
