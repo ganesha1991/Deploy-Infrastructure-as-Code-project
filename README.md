@@ -1,5 +1,5 @@
 # Infrastructure as Code Project Solution
-# Submitted by : Ganesh Kumar Selva Thirupathi 
+### Submitted by : Ganesh Kumar Selva Thirupathi 
 
 deploy.sh : This script is used to deploy, delete and preview this project - It accepts the below parameters
 
