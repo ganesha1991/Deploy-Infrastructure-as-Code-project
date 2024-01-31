@@ -1,0 +1,18 @@
+[
+	{
+        "ParameterKey": "ProjectName",
+        "ParameterValue": "GK-app-Demo"
+    },
+    {
+        "ParameterKey": "AMIId",
+        "ParameterValue": "ami-0c7217cdde317cfec"
+    },
+    {
+        "ParameterKey": "InstanceType",
+        "ParameterValue": "t2.micro"
+    },
+    {
+        "ParameterKey": "DesiredNoofInstances",
+        "ParameterValue": "4"
+    }
+]

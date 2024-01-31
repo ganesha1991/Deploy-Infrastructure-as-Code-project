@@ -1,0 +1,26 @@
+[
+    {
+        "ParameterKey": "ProjectName",
+        "ParameterValue": "GK-app-Demo"
+    },
+    {
+        "ParameterKey": "VpcCIDR",
+        "ParameterValue": "10.0.0.0/16"
+    },
+    {
+        "ParameterKey": "PublicSnet1CIDR",
+        "ParameterValue": "10.0.0.0/24"
+    },
+    {
+        "ParameterKey": "PublicSnet2CIDR",
+        "ParameterValue": "10.0.1.0/24"
+    },
+    {
+        "ParameterKey": "PrivateSnet1CIDR",
+        "ParameterValue": "10.0.2.0/24"
+    },
+    {
+        "ParameterKey": "PrivateSnet2CIDR",
+        "ParameterValue": "10.0.3.0/24"
+    }
+]

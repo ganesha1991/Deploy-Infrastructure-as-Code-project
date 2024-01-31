@@ -1,0 +1,175 @@
+Description: CD12352 - Infrastructure as Code Project - Udagram
+
+Parameters:
+  # Parameters passed are defined here
+    ProjectName:
+        Description: A Project name that will be prefixed to resource names.
+        Type: String
+    AMIId:
+        Description: AMI ID for EC2 instances to be used for our webapp.
+        Type: String
+    InstanceType:
+        Description: EC2 instance type to be used for our webapp
+        Type: String
+    DesiredNoofInstances:
+        Description: Number of EC2 instances desired to be created at launch
+        Type: String
+
+Resources:
+  LoadBalancerSecGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow http access to our load balancer
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${ProjectName}-VPCID"
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 0.0.0.0/0
+  
+  UdagramSecGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow http access to our app from the LB Security Group
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${ProjectName}-VPCID"
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        SourceSecurityGroupId: !Ref LoadBalancerSecGroup
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort: 0
+        ToPort: 65535
+        CidrIp: 0.0.0.0/0
+
+          
+  WebAppInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${ProjectName}-web-servers"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: 'Allow'
+          Principal:
+            Service:
+            - 'ec2.amazonaws.com'
+          Action:
+          - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: s3
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Action:
+              - 's3:GetObject'
+              Resource:
+                - !Sub "arn:aws:s3:::gk-udagram-demo-s3-bucket/*"
+                
+  WebAppInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: '/'
+      Roles:
+      - !Ref WebAppInstanceRole
+
+  WebAppLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties: 
+      LaunchTemplateName: !Sub "${ProjectName}-web-servers"
+      LaunchTemplateData:
+        UserData:
+          Fn::Base64: !Sub |
+              #!/bin/bash
+              apt-get update -y
+              sudo apt-get install nginx -y
+              service nginx start
+              cd /var/www/html
+              aws s3 cp s3://gk-udagram-demo-s3-bucket/index.html 
+              echo "Hurray! GK's Demo Works. Udacity. Thanks!" >> /var/www/html/index.html
+        ImageId: !Ref AMIId
+        SecurityGroupIds:
+          - !Ref UdagramSecGroup
+        InstanceType: !Ref InstanceType
+        BlockDeviceMappings:
+        - DeviceName: "/dev/sdk"
+          Ebs:
+            VolumeSize: '10'
+        IamInstanceProfile:
+          Name: !Ref WebAppInstanceProfile
+
+  WebAppGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier:
+      - Fn::ImportValue: 
+          !Sub "${ProjectName}-private-snets"
+      LaunchTemplate:
+        LaunchTemplateId: !Ref WebAppLaunchTemplate
+        Version: !GetAtt WebAppLaunchTemplate.LatestVersionNumber
+      MinSize: '4'
+      DesiredCapacity: !Ref DesiredNoofInstances
+      MaxSize: '6'
+      TargetGroupARNs:
+      - Ref: WebAppTargetGroup
+
+  WebAppLB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Subnets:
+      - Fn::ImportValue: !Sub "${ProjectName}-public-subnet1"
+      - Fn::ImportValue: !Sub "${ProjectName}-public-subnet2"
+      SecurityGroups:
+      - Ref: LoadBalancerSecGroup
+
+  Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn:
+          Ref: WebAppTargetGroup
+      LoadBalancerArn:
+        Ref: WebAppLB
+      Port: '80'
+      Protocol: HTTP
+
+  ALBListenerRule:
+      Type: AWS::ElasticLoadBalancingV2::ListenerRule
+      Properties:
+        Actions:
+        - Type: forward
+          TargetGroupArn: !Ref 'WebAppTargetGroup'
+        Conditions:
+        - Field: path-pattern
+          Values: [/]
+        ListenerArn: !Ref 'Listener'
+        Priority: 1
+
+  WebAppTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 20
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 2
+      Port: 80
+      Protocol: HTTP
+      UnhealthyThresholdCount: 5
+      VpcId: 
+        Fn::ImportValue:
+          Fn::Sub: "${ProjectName}-VPCID"
+
+Outputs:
+    WebAppLBDNSName:
+        Description: DNS name or Public URL of the Load Balancer
+        Value: !Join ["", ["http://", !GetAtt WebAppLB.DNSName]]
+        Export:
+            Name: !Sub ${ProjectName}-LB-DNSName
